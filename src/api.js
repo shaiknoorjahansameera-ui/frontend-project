@@ -1,19 +1,99 @@
+import { useState } from "react";
 import axios from "axios";
 
-// Create axios instance
-const API = axios.create({
-  baseURL: "http://localhost:5000/api",
-});
+function AddProduct() {
+  const [product, setProduct] = useState({
+    name: "",
+    price: "",
+    image: "",
+    category: "",
+    description: ""
+  });
 
-// 🔐 Automatically attach token to every request
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
+  const handleChange = (e) => {
+    setProduct({
+      ...product,
+      [e.target.name]: e.target.value
+    });
+  };
 
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  return req;
-});
+    try {
+      await axios.post(
+        "https://backend-project-ro8n.onrender.com/api/products",
+        product
+      );
 
-export default API;
+      alert("Product Added ✅");
+
+      setProduct({
+        name: "",
+        price: "",
+        image: "",
+        category: "",
+        description: ""
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add product ❌");
+    }
+  };
+
+  return (
+    <div>
+      <h1>Add New Catalog Product</h1>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="name"
+          placeholder="Product Name"
+          value={product.name}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        <input
+          type="number"
+          name="price"
+          placeholder="Price"
+          value={product.price}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        <input
+          type="text"
+          name="image"
+          placeholder="Image URL"
+          value={product.image}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        <input
+          type="text"
+          name="category"
+          placeholder="Category"
+          value={product.category}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        <textarea
+          name="description"
+          placeholder="Description"
+          value={product.description}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        <button type="submit">Add Product</button>
+      </form>
+    </div>
+  );
+}
+
+export default AddProduct;
