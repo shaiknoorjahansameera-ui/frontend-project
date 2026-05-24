@@ -1,232 +1,116 @@
-import { useState } from "react"
-import toast from "react-hot-toast"
-import { Link, useNavigate } from "react-router-dom"
-import { registerUser } from "../services/authService"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 function Register() {
 
   const navigate = useNavigate()
 
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] =
-    useState("")
-  const [confirmPassword,
-    setConfirmPassword] = useState("")
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: ""
+  })
 
-  const [error, setError] =
-    useState("")
+  useEffect(() => {
 
-  async function handleRegister(event) {
+    const token = localStorage.getItem("token")
 
-    event.preventDefault()
-
-    // Empty validation
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !confirmPassword
-    ) {
-
-      setError("All fields are required")
-
-      return
+    if (token) {
+      navigate("/")
     }
 
-    // Email validation
-    const emailRegex = /\S+@\S+\.\S+/
+  }, [])
 
-    if (!emailRegex.test(email)) {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
 
-      setError("Invalid email format")
-
-      return
-    }
-
-    // Password validation
-    if (password.length < 6) {
-
-      setError(
-        "Password must be at least 6 characters"
-      )
-
-      return
-    }
-
-    // Confirm password validation
-    if (password !== confirmPassword) {
-
-      setError(
-        "Password and confirm password must match"
-      )
-      toast.error("Passwords do not match")
-
-      return
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault()
 
     try {
 
-      const userData = {
-        name,
-        email,
-        password
-      }
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        formData
+      )
 
-      const response =
-        await registerUser(userData)
-
-      // Store token
       localStorage.setItem(
         "token",
-        response.token
+        response.data.token
       )
 
-      setError("")
-
-      toast.success("Registration successful")
-
-      navigate("/login")
-
-    } catch (err) {
-
-      setError(
-        err.response?.data?.message ||
-        "Registration failed"
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user)
       )
-      toast.error("Registration failed")
 
-      console.log(err)
+      alert("Registration Successful ✅")
+
+      navigate("/")
+
+    } catch (error) {
+
+      alert("Registration Failed ❌")
+
+      console.log(error)
 
     }
-
   }
 
   return (
+    <div
+      style={{
+        width: "300px",
+        margin: "100px auto"
+      }}
+    >
 
-    <main className="login-page">
+      <h1>Register</h1>
 
-      <section className="login-card">
+      <form onSubmit={handleSubmit}>
 
-        <p className="eyebrow">
-          Create Account
-        </p>
+        <input
+          type="text"
+          name="name"
+          placeholder="Enter Name"
+          value={formData.name}
+          onChange={handleChange}
+        />
 
-        <h1>Register</h1>
+        <br /><br />
 
-        <p className="login-copy">
-          Create your store account and
-          start managing your ecommerce
-          dashboard.
-        </p>
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter Email"
+          value={formData.email}
+          onChange={handleChange}
+        />
 
-        <form onSubmit={handleRegister}>
+        <br /><br />
 
-          <label htmlFor="name">
-            Full Name
-          </label>
+        <input
+          type="password"
+          name="password"
+          placeholder="Enter Password"
+          value={formData.password}
+          onChange={handleChange}
+        />
 
-          <input
-            id="name"
-            type="text"
-            placeholder="Enter full name"
-            autoComplete="name"
-            value={name}
-            onChange={(event) =>
-              setName(event.target.value)
-            }
-            required
-          />
+        <br /><br />
 
-          <label htmlFor="email">
-            Email Address
-          </label>
+        <button type="submit">
+          Register
+        </button>
 
-          <input
-            id="email"
-            type="email"
-            placeholder="Enter email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) =>
-              setEmail(event.target.value)
-            }
-            required
-          />
+      </form>
 
-          <label htmlFor="password">
-            Password
-          </label>
-
-          <input
-            id="password"
-            type="password"
-            placeholder="Create password"
-            autoComplete="new-password"
-            minLength="6"
-            value={password}
-            onChange={(event) =>
-              setPassword(event.target.value)
-            }
-            required
-          />
-
-          <label htmlFor="confirmPassword">
-            Confirm Password
-          </label>
-
-          <input
-            id="confirmPassword"
-            type="password"
-            placeholder="Confirm password"
-            autoComplete="new-password"
-            minLength="6"
-            value={confirmPassword}
-            onChange={(event) =>
-              setConfirmPassword(
-                event.target.value
-              )
-            }
-            required
-          />
-
-          {
-            error && (
-              <p
-                className="form-error"
-                aria-live="polite"
-              >
-                {error}
-              </p>
-            )
-          }
-
-          <button type="submit">
-            Register
-          </button>
-
-        </form>
-
-        <p className="register-text">
-          Already have an account?
-          {" "}
-          <Link to="/login">
-            Login
-          </Link>
-        </p>
-
-        <p className="register-text">
-          Forgot your password?
-          {" "}
-          <Link to="/forgot-password">
-            Reset it
-          </Link>
-        </p>
-
-      </section>
-
-    </main>
-
+    </div>
   )
 }
 

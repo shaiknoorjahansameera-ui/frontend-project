@@ -36,7 +36,7 @@ function AddProduct() {
         description: ""
       });
     } catch (err) {
-      console.error(err);
+
       alert("Failed to add product ❌");
     }
   };
