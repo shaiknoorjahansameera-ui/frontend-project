@@ -1,103 +1,172 @@
-import { useState, useEffect } from "react"
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+import toast from "react-hot-toast"
+import { Link, useNavigate } from "react-router-dom"
+import { loginUser } from "../services/authService"
 
 function Login() {
 
   const navigate = useNavigate()
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  })
+  const [email, setEmail] = useState("")
+  const [password, setPassword] =
+    useState("")
 
-  useEffect(() => {
+  const [error, setError] =
+    useState("")
 
-    const token = localStorage.getItem("token")
+  async function handleLogin(event) {
 
-    if (token) {
-      navigate("/")
+    event.preventDefault()
+
+    // Empty validation
+    if (!email || !password) {
+
+      setError("All fields are required")
+
+      return
     }
 
-  }, [])
+    // Email validation
+    const emailRegex = /\S+@\S+\.\S+/
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+    if (!emailRegex.test(email)) {
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+      setError("Invalid email format")
+
+      return
+    }
+
+    // Password validation
+    if (password.length < 6) {
+
+      setError(
+        "Password must be at least 6 characters"
+      )
+
+      return
+    }
 
     try {
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        formData
-      )
+      const userData = {
+        email,
+        password
+      }
 
+      const response =
+        await loginUser(userData)
+
+      // Store token
       localStorage.setItem(
         "token",
-        response.data.token
+        response.token
       )
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.data.user)
-      )
+      setError("")
 
-      alert("Login Successful ✅")
+      toast.success("Login successful")
 
       navigate("/")
 
-    } catch (error) {
+    } catch {
 
-      alert("Login Failed ❌")
-
-      console.log(error)
+      setError("Login failed")
+      toast.error("Login failed")
 
     }
+
   }
 
   return (
-    <div
-      style={{
-        width: "300px",
-        margin: "100px auto"
-      }}
-    >
-      <h1>Login</h1>
 
-      <form onSubmit={handleSubmit}>
+    <main className="login-page">
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
+      <section className="login-card">
 
-        <br /><br />
+        <p className="eyebrow">
+          Welcome Back
+        </p>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
+        <h1>Login</h1>
 
-        <br /><br />
+        <p className="login-copy">
+          Sign in to manage products,
+          tenants, orders, and your
+          ecommerce dashboard.
+        </p>
 
-        <button type="submit">
-          Login
-        </button>
+        <form onSubmit={handleLogin}>
 
-      </form>
-    </div>
+          <label htmlFor="email">
+            Email Address
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            placeholder="Enter email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
+            required
+          />
+
+          <label htmlFor="password">
+            Password
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter password"
+            autoComplete="current-password"
+            minLength="6"
+            value={password}
+            onChange={(event) =>
+              setPassword(event.target.value)
+            }
+            required
+          />
+
+          {
+            error && (
+              <p
+                className="form-error"
+                aria-live="polite"
+              >
+                {error}
+              </p>
+            )
+          }
+
+          <button type="submit">
+            Login
+          </button>
+
+        </form>
+
+        <p className="register-text">
+          Don't have an account?
+          {" "}
+          <Link to="/register">
+            Register
+          </Link>
+        </p>
+
+        <p className="register-text">
+          Forgot your password?
+          {" "}
+          <Link to="/forgot-password">
+            Reset it
+          </Link>
+        </p>
+
+      </section>
+
+    </main>
+
   )
 }
 

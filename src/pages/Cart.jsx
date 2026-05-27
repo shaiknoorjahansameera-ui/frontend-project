@@ -1,94 +1,62 @@
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import Loader from "../components/Loader"
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
-const initialCartItems = [
-  { id: 1, name: "Laptop", price: 50000, quantity: 1 },
-  { id: 2, name: "Phone", price: 20000, quantity: 2 }
-]
+const Cart = () => {
 
-function Cart() {
-  const [cartItems, setCartItems] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [cartItems, setCartItems] = useState(() => {
+    const savedCart =
+      localStorage.getItem("cartItems");
+
+    return savedCart
+      ? JSON.parse(savedCart)
+      : [];
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCartItems(initialCartItems)
-      setLoading(false)
-    }, 500)
+    localStorage.setItem(
+      "cartItems",
+      JSON.stringify(cartItems)
+    );
+  }, [cartItems]);
 
-    return () => clearTimeout(timer)
-  }, [])
-
-  function increaseQty(id) {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    )
-  }
-
-  function decreaseQty(id) {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
-          : item
-      )
-    )
-  }
-
-  function removeItem(id) {
-    setCartItems((items) => items.filter((item) => item.id !== id))
-  }
-
-  const totalAmount = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+  const totalPrice = cartItems.reduce(
+    (acc, item) =>
+      acc + item.price,
     0
-  )
+  );
 
   return (
-    <main className="cart-page">
-      <section className="page-heading">
-        <p className="eyebrow">Shopping Cart</p>
-        <h1>Your Cart</h1>
-        <p>Review product quantities before checkout.</p>
-      </section>
+    <div className="container mt-5">
 
-      {loading ? (
-        <Loader count={3} />
+      <h2>Cart Page</h2>
+
+      {cartItems.length === 0 ? (
+        <h4>Your Cart is Empty</h4>
       ) : (
-        <section className="cart-layout">
-          <div className="cart-items">
-            {cartItems.map((item) => (
-              <article className="cart-item" key={item.id}>
-                <div className="cart-item-info">
-                  <h3>{item.name}</h3>
-                  <p>Price: Rs. {item.price}</p>
-                  <p>Quantity: {item.quantity}</p>
-                </div>
+        <>
+          {cartItems.map((item, index) => (
+            <div
+              key={index}
+              className="card p-3 mb-3"
+            >
+              <h5>{item.title}</h5>
 
-                <div className="cart-controls">
-                  <button type="button" onClick={() => increaseQty(item.id)}>+</button>
-                  <button type="button" onClick={() => decreaseQty(item.id)}>-</button>
-                  <button type="button" onClick={() => removeItem(item.id)}>Remove</button>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <aside className="cart-summary">
-            <h2>Order Summary</h2>
-            <div className="summary-row">
-              <span>Total</span>
-              <strong>Rs. {totalAmount}</strong>
+              <p>Price: ₹{item.price}</p>
             </div>
-            <Link className="primary-button" to="/checkout">Checkout</Link>
-          </aside>
-        </section>
-      )}
-    </main>
-  )
-}
+          ))}
 
-export default Cart
+          <h4>Total: ₹{totalPrice}</h4>
+
+          <Link to="/checkout">
+            <button className="btn btn-primary">
+              Checkout
+            </button>
+          </Link>
+        </>
+      )}
+
+    </div>
+  );
+};
+
+export default Cart;

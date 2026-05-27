@@ -1,26 +1,54 @@
-function ProductCard({ product }) {
+import React from "react";
+import axios from "axios";
+
+const ProductCard = ({ product }) => {
+  
+  // ⭐ ADD TO WISHLIST FUNCTION
+  const addToWishlist = async () => {
+    try {
+      await axios.post("http://localhost:5000/api/wishlist/add", {
+        userId: "123", // later replace with logged-in user id
+        productId: product._id,
+      });
+
+      alert("Added to Wishlist ❤️");
+    } catch (error) {
+      console.log("Wishlist Error:", error);
+      alert("Failed to add wishlist");
+    }
+  };
+
   return (
-    <article className="product-card">
-      <div className="product-image">
-        <img src={product.image} alt={product.title} loading="lazy" />
-      </div>
+    <div style={{ border: "1px solid #ddd", padding: "10px", margin: "10px" }}>
+      
+      {/* 🖼️ Product Image */}
+      <img
+        src={product.image}
+        alt={product.name}
+        style={{ width: "150px" }}
+      />
 
-      <div className="product-info">
-        <div className="product-meta">
-          <p className="product-category">{product.category}</p>
-          <span className="product-rating">Star {product.rating}</span>
-        </div>
+      {/* 📦 Product Info */}
+      <h3>{product.name}</h3>
+      <p>₹ {product.price}</p>
+      <p>{product.description}</p>
 
-        <h3>{product.title}</h3>
-        <p className="product-price">Rs. {product.price}</p>
+      {/* ❤️ Wishlist Button */}
+      <button
+        onClick={addToWishlist}
+        style={{
+          backgroundColor: "red",
+          color: "white",
+          padding: "5px 10px",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        ❤️ Add to Wishlist
+      </button>
 
-        <div className="product-actions">
-          <button type="button">Add to Cart</button>
-          <button type="button" className="secondary-button">View</button>
-        </div>
-      </div>
-    </article>
-  )
-}
+    </div>
+  );
+};
 
-export default ProductCard
+export default ProductCard;

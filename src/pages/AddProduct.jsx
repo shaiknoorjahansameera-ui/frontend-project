@@ -1,5 +1,6 @@
-import { useState } from "react";
-import axios from "axios";
+import { useState } from "react"
+import toast from "react-hot-toast"
+import API from "../api"
 
 function AddProduct() {
   const [product, setProduct] = useState({
@@ -8,25 +9,21 @@ function AddProduct() {
     image: "",
     category: "",
     description: ""
-  });
+  })
 
-  const handleChange = (e) => {
+  function handleChange(event) {
     setProduct({
       ...product,
-      [e.target.name]: e.target.value
-    });
-  };
+      [event.target.name]: event.target.value
+    })
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault()
 
     try {
-      await axios.post(
-        "https://backend-project-ro8n.onrender.com/api/products",
-        product
-      );
-
-      alert("Product Added ✅");
+      await API.post("/products", product)
+      toast.success("Product added")
 
       setProduct({
         name: "",
@@ -34,66 +31,80 @@ function AddProduct() {
         image: "",
         category: "",
         description: ""
-      });
+      })
     } catch (err) {
-
-      alert("Failed to add product ❌");
+      toast.error(err.response?.data?.message || "Failed to add product")
     }
-  };
+  }
 
   return (
-    <div>
-      <h1>Add New Catalog Product</h1>
+    <main className="settings-page">
+      <section className="dashboard-heading">
+        <div>
+          <p className="eyebrow">Catalog</p>
+          <h1>Add Product</h1>
+          <p>Create a product listing for the storefront.</p>
+        </div>
+      </section>
 
-      <form onSubmit={handleSubmit}>
+      <form className="settings-form" onSubmit={handleSubmit}>
+        <label htmlFor="name">Product Name</label>
         <input
+          id="name"
           type="text"
           name="name"
           placeholder="Product Name"
           value={product.name}
           onChange={handleChange}
+          required
         />
-        <br /><br />
 
+        <label htmlFor="price">Price</label>
         <input
+          id="price"
           type="number"
           name="price"
           placeholder="Price"
           value={product.price}
           onChange={handleChange}
+          required
         />
-        <br /><br />
 
+        <label htmlFor="image">Image URL</label>
         <input
-          type="text"
+          id="image"
+          type="url"
           name="image"
           placeholder="Image URL"
           value={product.image}
           onChange={handleChange}
         />
-        <br /><br />
 
+        <label htmlFor="category">Category</label>
         <input
+          id="category"
           type="text"
           name="category"
           placeholder="Category"
           value={product.category}
           onChange={handleChange}
         />
-        <br /><br />
 
+        <label htmlFor="description">Description</label>
         <textarea
+          id="description"
           name="description"
           placeholder="Description"
           value={product.description}
           onChange={handleChange}
         />
-        <br /><br />
 
-        <button type="submit">Add Product</button>
+        <div className="settings-actions">
+          <button type="submit">Add Product</button>
+        </div>
       </form>
-    </div>
-  );
+    </main>
+  )
 }
 
-export default AddProduct;
+export default AddProduct

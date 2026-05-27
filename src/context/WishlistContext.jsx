@@ -1,0 +1,60 @@
+import {
+  createContext,
+  useEffect,
+  useState,
+} from "react"
+
+export const WishlistContext =
+  createContext()
+
+function WishlistProvider({ children }) {
+  const [wishlist, setWishlist] =
+    useState(() => {
+      const saved =
+        localStorage.getItem("wishlist")
+
+      return saved ? JSON.parse(saved) : []
+    })
+
+  useEffect(() => {
+    localStorage.setItem(
+      "wishlist",
+      JSON.stringify(wishlist)
+    )
+  }, [wishlist])
+
+  const addToWishlist = (product) => {
+    const exists = wishlist.find(
+      (item) =>
+        (item._id || item.id) ===
+        (product._id || product.id)
+    )
+
+    if (!exists) {
+      setWishlist([...wishlist, product])
+    }
+  }
+
+  const removeFromWishlist = (id) => {
+    setWishlist(
+      wishlist.filter(
+        (item) =>
+          (item._id || item.id) !== id
+      )
+    )
+  }
+
+  return (
+    <WishlistContext.Provider
+      value={{
+        wishlist,
+        addToWishlist,
+        removeFromWishlist,
+      }}
+    >
+      {children}
+    </WishlistContext.Provider>
+  )
+}
+
+export default WishlistProvider
